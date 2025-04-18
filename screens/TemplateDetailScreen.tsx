@@ -13,19 +13,11 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getTemplateById } from '../utils/templateStorage';
 import { Template } from '../types/template';
 import { background, text, button, shadow } from '../theme/colors';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types/navigation';
 
-// This would normally come from a navigation library like react-navigation
-interface TemplateDetailScreenProps {
-  route: {
-    params: {
-      templateId: string;
-    };
-  };
-  navigation: {
-    navigate: (screen: string, params?: any) => void;
-    goBack: () => void;
-  };
-}
+// Define screen props using the RootStackParamList
+type TemplateDetailScreenProps = NativeStackScreenProps<RootStackParamList, 'TemplateDetail'>;
 
 export const TemplateDetailScreen: React.FC<TemplateDetailScreenProps> = ({ 
   route, 
@@ -42,7 +34,7 @@ export const TemplateDetailScreen: React.FC<TemplateDetailScreenProps> = ({
   const loadTemplate = async () => {
     try {
       setLoading(true);
-      const templateData = await getTemplateById(templateId);
+      const templateData = await getTemplateById(templateId!);
       if (templateData) {
         setTemplate(templateData);
       } else {
@@ -167,22 +159,5 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  footer: {
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.1)',
-  },
-  useButton: {
-    backgroundColor: button.primary,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  useButtonText: {
-    color: text.primary,
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

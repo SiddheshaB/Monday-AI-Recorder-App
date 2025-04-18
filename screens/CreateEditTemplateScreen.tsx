@@ -15,6 +15,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { addTemplate, getTemplateById, updateTemplate } from '../utils/templateStorage';
 import { Template, TemplateSection } from '../types/template';
 import { background, text, button, shadow } from '../theme/colors';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types/navigation';
 
 // Simple ID generator
 const generateId = () => {
@@ -23,24 +25,17 @@ const generateId = () => {
          Date.now().toString(36);
 };
 
-// This would normally come from a navigation library like react-navigation
-interface CreateEditTemplateScreenProps {
-  route: {
-    params?: {
-      templateId?: string;
-    };
-  };
-  navigation: {
-    navigate: (screen: string, params?: any) => void;
-    goBack: () => void;
-  };
-}
+// Define screen props using the RootStackParamList
+type CreateTemplateScreenProps = NativeStackScreenProps<RootStackParamList, 'CreateTemplate'>;
+type EditTemplateScreenProps = NativeStackScreenProps<RootStackParamList, 'EditTemplate'>;
+// Union type to handle both screens with the same component
+type CreateEditTemplateScreenProps = CreateTemplateScreenProps | EditTemplateScreenProps;
 
 export const CreateEditTemplateScreen: React.FC<CreateEditTemplateScreenProps> = ({ 
   route, 
   navigation 
 }) => {
-  const { templateId } = route.params || {};
+  const templateId = route.params && 'templateId' in route.params ? route.params.templateId : undefined;
   const isEditing = !!templateId;
   
   const [title, setTitle] = useState('');
@@ -51,7 +46,7 @@ export const CreateEditTemplateScreen: React.FC<CreateEditTemplateScreenProps> =
   const [initialLoading, setInitialLoading] = useState(isEditing);
 
   useEffect(() => {
-    if (isEditing) {
+    if (isEditing && templateId) {
       loadTemplate();
     }
   }, [templateId]);
@@ -99,9 +94,9 @@ export const CreateEditTemplateScreen: React.FC<CreateEditTemplateScreenProps> =
     try {
       setLoading(true);
       
-      if (isEditing) {
+      if (isEditing && templateId) {
         await updateTemplate({
-          id: templateId!,
+          id: templateId,
           title: title.trim(),
           sections: cleanedSections
         });

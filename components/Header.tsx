@@ -3,19 +3,7 @@ import { View, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { background, icon, shadow } from '../theme/colors';
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
-// Define the navigation param list type
-type RootStackParamList = {
-  Main: undefined;
-  TemplatesList: undefined;
-  TemplateDetail: { templateId: string };
-  CreateTemplate: undefined;
-  EditTemplate: { templateId: string };
-};
-
-// Create a typed navigation hook
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+import { NavigationProp } from '../types/navigation';
 
 interface HeaderProps {
   paddingTop: number;
