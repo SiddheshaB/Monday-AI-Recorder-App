@@ -1,14 +1,22 @@
-import React from 'react';
-import { View, Text, SafeAreaView, StyleSheet } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, SafeAreaView, StyleSheet, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { Header } from '../components/Header';
 import { RecordButton } from '../components/RecordButton';
 import { TranscriptBox } from '../components/TranscriptBox';
 import { useSpeechToText } from '../hooks/useSpeechToText';
+import { useKeepAwake } from 'expo-keep-awake';
 import { background, text } from '../theme/colors';
+import { addRecording } from '../utils/recordingStorage';
+import { NavigationProp } from '../types/navigation';
 
 export const MainScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<NavigationProp>();
+  const [recordingStartTime, setRecordingStartTime] = useState<Date | null>(null);
+  const recordingDurationRef = useRef<number>(0);
+  
   const {
     recognizing,
     error,
@@ -17,6 +25,50 @@ export const MainScreen: React.FC = () => {
     stop,
   } = useSpeechToText();
 
+  // Keep the app awake while recording is active
+  useKeepAwake(isRecordingActive ? 'speech-recording' : undefined);
+
+  const handleStartRecording = async () => {
+    setRecordingStartTime(new Date());
+    await start();
+  };
+
+  const handleStopRecording = async () => {
+    // Calculate recording duration in seconds
+    const duration = recordingStartTime 
+      ? Math.floor((new Date().getTime() - recordingStartTime.getTime()) / 1000)
+      : 0;
+    
+    recordingDurationRef.current = duration;
+    await stop();
+    
+    // Save the recording if there's a transcript
+    if (completeTranscript.trim()) {
+      try {
+        const recording = await addRecording(completeTranscript, duration);
+        
+        // Show success message
+        Alert.alert(
+          'Recording Saved',
+          'Your recording has been saved successfully.',
+          [
+            { 
+              text: 'View Recording', 
+              onPress: () => navigation.navigate('RecordingDetail', { recordingId: recording.id }) 
+            },
+            { text: 'OK' }
+          ]
+        );
+      } catch (error) {
+        console.error('Error saving recording:', error);
+        Alert.alert('Error', 'Failed to save recording');
+      }
+    }
+    
+    // Reset recording start time
+    setRecordingStartTime(null);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <Header paddingTop={insets.top + 16} />
@@ -24,7 +76,10 @@ export const MainScreen: React.FC = () => {
       <View style={styles.container}>
         {/* Recording button in center, fixed position */}
         <View style={styles.buttonContainer}>
-          <RecordButton recognizing={recognizing} onPress={recognizing ? stop : start} />
+          <RecordButton 
+            recognizing={recognizing} 
+            onPress={recognizing ? handleStopRecording : handleStartRecording} 
+          />
           <Text style={styles.recordLabel}>
             {recognizing ? 'Stop Recording' : 'Start Recording'}
           </Text>

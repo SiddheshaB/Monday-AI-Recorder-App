@@ -13,6 +13,10 @@ export type RootStackParamList = {
   TemplateDetail: { templateId: string };
   CreateTemplate: undefined;
   EditTemplate: { templateId: string };
+  
+  // Recording screens
+  RecordingsList: undefined;
+  RecordingDetail: { recordingId: string };
 };
 
 /**

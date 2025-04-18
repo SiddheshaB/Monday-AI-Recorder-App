@@ -8,6 +8,8 @@ import { MainScreen } from '../screens/MainScreen';
 import { TemplatesListScreen } from '../screens/TemplatesListScreen';
 import { TemplateDetailScreen } from '../screens/TemplateDetailScreen';
 import { CreateEditTemplateScreen } from '../screens/CreateEditTemplateScreen';
+import { RecordingsListScreen } from '../screens/RecordingsListScreen';
+import { RecordingDetailScreen } from '../screens/RecordingDetailScreen';
 
 // Create the navigator with proper typing
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -22,11 +24,12 @@ export const AppNavigator = () => {
           animation: 'slide_from_right',
         }}
       >
+        {/* Main screen */}
         <Stack.Screen name="Main" component={MainScreen} />
+        
+        {/* Template screens */}
         <Stack.Screen name="TemplatesList" component={TemplatesListScreen} />
         <Stack.Screen name="TemplateDetail" component={TemplateDetailScreen} />
-        
-        {/* Use the same component for both create and edit screens */}
         <Stack.Screen 
           name="CreateTemplate" 
           component={CreateEditTemplateScreen as any} 
@@ -35,6 +38,10 @@ export const AppNavigator = () => {
           name="EditTemplate" 
           component={CreateEditTemplateScreen as any} 
         />
+        
+        {/* Recording screens */}
+        <Stack.Screen name="RecordingsList" component={RecordingsListScreen} />
+        <Stack.Screen name="RecordingDetail" component={RecordingDetailScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
