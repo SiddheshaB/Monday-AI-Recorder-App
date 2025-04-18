@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { background, text, shadow } from '../theme/colors';
 
 interface TranscriptBoxProps {
   transcript: string;
@@ -17,10 +18,10 @@ export const TranscriptBox: React.FC<TranscriptBoxProps> = ({ transcript }) => (
 const styles = StyleSheet.create({
   transcriptBox: {
     width: '100%',
-    backgroundColor: '#23262F',
+    backgroundColor: background.secondary,
     borderRadius: 12,
     padding: 16,
-    shadowColor: '#000',
+    shadowColor: shadow.color,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
@@ -30,7 +31,7 @@ const styles = StyleSheet.create({
     maxHeight: 200,
   },
   transcriptTitle: {
-    color: '#BDBDBD',
+    color: text.secondary,
     fontWeight: 'bold',
     marginBottom: 8,
     fontSize: 16,
@@ -38,7 +39,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   transcriptText: {
-    color: '#fff',
+    color: text.primary,
     fontSize: 17,
     lineHeight: 24,
     letterSpacing: 0.2,

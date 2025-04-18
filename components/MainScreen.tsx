@@ -5,6 +5,7 @@ import { Header } from './Header';
 import { RecordButton } from './RecordButton';
 import { TranscriptBox } from './TranscriptBox';
 import { useSpeechToText } from '../hooks/useSpeechToText';
+import { background, text } from '../theme/colors';
 
 export const MainScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
@@ -42,7 +43,7 @@ export const MainScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#181A20',
+    backgroundColor: background.primary,
   },
   container: {
     flex: 1,
@@ -67,13 +68,13 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   recordLabel: {
-    color: '#fff',
+    color: text.primary,
     fontSize: 18,
     marginBottom: 10,
     fontWeight: 'bold',
   },
   error: {
-    color: '#EB5757',
+    color: text.error,
     marginTop: 10,
     fontSize: 14,
     textAlign: 'center',
