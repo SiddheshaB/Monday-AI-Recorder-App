@@ -4,19 +4,19 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { button, text, shadow } from '../theme/colors';
 
 interface RecordButtonProps {
-  recognizing: boolean;
+  isRecordingActive: boolean;
   onPress: () => void;
 }
 
-export const RecordButton: React.FC<RecordButtonProps> = ({ recognizing, onPress }) => (
+export const RecordButton: React.FC<RecordButtonProps> = ({ isRecordingActive, onPress }) => (
   <TouchableOpacity
-    style={[styles.recordButton, recognizing ? styles.recording : null]}
+    style={[styles.recordButton, isRecordingActive ? styles.recording : null]}
     onPress={onPress}
     activeOpacity={0.8}
-    accessibilityLabel={recognizing ? 'Stop Recording' : 'Start Recording'}
+    accessibilityLabel={isRecordingActive ? 'Stop Recording' : 'Start Recording'}
   >
     <MaterialCommunityIcons
-      name={recognizing ? 'stop' : 'microphone'}
+      name={isRecordingActive ? 'stop' : 'microphone'}
       size={40}
       color={text.primary}
     />

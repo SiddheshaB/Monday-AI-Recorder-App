@@ -1,5 +1,31 @@
 # Changelog
 
+## Version 0.2.0 (2025-04-18)
+
+### Added
+- **Recordings Feature**
+  - Implemented recordings list screen to display saved recordings
+  - Added recording detail screen with transcript display
+  - Integrated LLM processing using Groq API
+  - Added template selection for processing recordings
+
+- **API Security**
+  - Implemented secure API key storage in app.json
+  - Added platform-specific configuration for iOS and Android
+
+### Improved
+- **Speech Recognition**
+  - Separated recording state from recognition state for better reliability
+  - Added auto-restart functionality for continuous recording
+  - Improved transcript persistence during temporary disconnections
+  - Reduced recognition restart delay to 500ms for better user experience
+
+- **User Experience**
+  - Replaced alert dialogs with toast notifications for recording confirmation
+  - Added auto-navigation to recording details after saving
+  - Improved LLM prompt formatting with clear response structure
+  - Enhanced error handling throughout the application
+
 ## Version 0.1.0 (2025-04-18)
 
 ### Added

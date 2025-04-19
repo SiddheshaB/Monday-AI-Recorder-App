@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, SafeAreaView, StyleSheet, Alert } from 'react-native';
+import { View, Text, SafeAreaView, StyleSheet, Alert, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Header } from '../components/Header';
@@ -10,6 +10,7 @@ import { useKeepAwake } from 'expo-keep-awake';
 import { background, text } from '../theme/colors';
 import { addRecording } from '../utils/recordingStorage';
 import { NavigationProp } from '../types/navigation';
+import { ToastAndroid } from 'react-native';
 
 export const MainScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
@@ -18,7 +19,7 @@ export const MainScreen: React.FC = () => {
   const recordingDurationRef = useRef<number>(0);
   
   const {
-    recognizing,
+    isRecordingActive,
     error,
     completeTranscript,
     start,
@@ -47,18 +48,16 @@ export const MainScreen: React.FC = () => {
       try {
         const recording = await addRecording(completeTranscript, duration);
         
-        // Show success message
-        Alert.alert(
-          'Recording Saved',
-          'Your recording has been saved successfully.',
-          [
-            { 
-              text: 'View Recording', 
-              onPress: () => navigation.navigate('RecordingDetail', { recordingId: recording.id }) 
-            },
-            { text: 'OK' }
-          ]
-        );
+        // Show toast notification instead of alert
+        if (Platform.OS === 'android') {
+          ToastAndroid.show('Recording saved successfully', ToastAndroid.SHORT);
+        } else {
+          // For iOS, use a temporary alert that auto-dismisses
+          const recordingId = recording.id;
+          setTimeout(() => {
+            navigation.navigate('RecordingDetail', { recordingId });
+          }, 300);
+        }
       } catch (error) {
         console.error('Error saving recording:', error);
         Alert.alert('Error', 'Failed to save recording');
@@ -77,11 +76,11 @@ export const MainScreen: React.FC = () => {
         {/* Recording button in center, fixed position */}
         <View style={styles.buttonContainer}>
           <RecordButton 
-            recognizing={recognizing} 
-            onPress={recognizing ? handleStopRecording : handleStartRecording} 
+            isRecordingActive={isRecordingActive} 
+            onPress={isRecordingActive ? handleStopRecording : handleStartRecording} 
           />
           <Text style={styles.recordLabel}>
-            {recognizing ? 'Stop Recording' : 'Start Recording'}
+            {isRecordingActive ? 'Stop Recording' : 'Start Recording'}
           </Text>
           {error && <Text style={styles.error}>{error}</Text>}
         </View>
