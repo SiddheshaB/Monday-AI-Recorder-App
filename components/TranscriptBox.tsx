@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { background, text, shadow } from '../theme/colors';
 
@@ -6,14 +6,32 @@ interface TranscriptBoxProps {
   transcript: string;
 }
 
-export const TranscriptBox: React.FC<TranscriptBoxProps> = ({ transcript }) => (
-  <View style={styles.transcriptBox}>
-    <Text style={styles.transcriptTitle}>Transcript</Text>
-    <ScrollView style={styles.scrollView}>
-      <Text style={styles.transcriptText}>{transcript.trim()}</Text>
-    </ScrollView>
-  </View>
-);
+export const TranscriptBox: React.FC<TranscriptBoxProps> = ({ transcript }) => {
+  let scrollViewRef: ScrollView | null = null;
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
+
+  return (
+    <View style={styles.transcriptBox}>
+      <Text style={styles.transcriptTitle}>Transcript</Text>
+      <ScrollView 
+        ref={(ref) => {
+          scrollViewRef = ref;
+        }}
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        onScrollBeginDrag={() => setIsUserScrolling(true)}
+        onScrollEndDrag={() => setIsUserScrolling(false)}
+        onContentSizeChange={() => {
+          if (scrollViewRef && transcript.trim() && !isUserScrolling) {
+            scrollViewRef.scrollToEnd({ animated: true });
+          }
+        }}
+      >
+        <Text style={styles.transcriptText}>{transcript.trim()}</Text>
+      </ScrollView>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   transcriptBox: {
