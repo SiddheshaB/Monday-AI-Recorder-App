@@ -7,7 +7,10 @@ import {
   StyleSheet, 
   ActivityIndicator,
   Alert,
-  Modal
+  Modal,
+  TextInput,
+  Platform,
+  ToastAndroid
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -33,6 +36,8 @@ export const RecordingDetailScreen: React.FC<RecordingDetailScreenProps> = ({
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [templateModalVisible, setTemplateModalVisible] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState('');
 
   useEffect(() => {
     loadRecording();
@@ -99,6 +104,35 @@ export const RecordingDetailScreen: React.FC<RecordingDetailScreenProps> = ({
     setTemplateModalVisible(false);
   };
 
+  const handleTitleEdit = () => {
+    if (!recording) return;
+    setEditedTitle(recording.title);
+    setIsEditingTitle(true);
+  };
+
+  const handleSaveTitle = async () => {
+    if (!recording || !editedTitle.trim()) return;
+    
+    try {
+      const updatedRecording: Recording = {
+        ...recording,
+        title: editedTitle.trim()
+      };
+      
+      await updateRecording(updatedRecording);
+      setRecording(updatedRecording);
+      setIsEditingTitle(false);
+      
+      // Show success feedback
+      if (Platform.OS === 'android') {
+        ToastAndroid.show('Title updated successfully', ToastAndroid.SHORT);
+      }
+    } catch (error) {
+      console.error('Error updating recording title:', error);
+      Alert.alert('Error', 'Failed to update recording title');
+    }
+  };
+
   const processWithTemplate = async () => {
     if (!recording || !selectedTemplate) return;
 
@@ -154,10 +188,30 @@ export const RecordingDetailScreen: React.FC<RecordingDetailScreenProps> = ({
         >
           <MaterialCommunityIcons name="arrow-left" size={24} color={text.primary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1} ellipsizeMode="tail">
-          {recording.title}
-        </Text>
-        <View style={{ width: 24 }} />
+        {isEditingTitle ? (
+          <View style={styles.titleEditContainer}>
+            <TextInput
+              style={styles.titleInput}
+              value={editedTitle}
+              onChangeText={setEditedTitle}
+              onSubmitEditing={handleSaveTitle}
+              onBlur={handleSaveTitle}
+              autoFocus
+              returnKeyType="done"
+              selectionColor={button.primary}
+            />
+          </View>
+        ) : (
+          <TouchableOpacity 
+            onPress={handleTitleEdit}
+            style={styles.titleContainer}
+          >
+            <Text style={styles.headerTitle} numberOfLines={1} ellipsizeMode="tail">
+              {recording.title}
+            </Text>
+          </TouchableOpacity>
+        )}
+        <View style={{ width: 40 }} />
       </View>
 
       <ScrollView 
@@ -285,11 +339,28 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 8,
   },
+  titleContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  titleEditContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  titleInput: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: text.primary,
+    padding: 0,
+    textAlign: 'center',
+    width: '100%',
+  },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: text.primary,
-    flex: 1,
     textAlign: 'center',
   },
   scrollView: {
