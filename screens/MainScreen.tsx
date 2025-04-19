@@ -82,7 +82,9 @@ export const MainScreen: React.FC = () => {
           <Text style={styles.recordLabel}>
             {isRecordingActive ? 'Stop Recording' : 'Start Recording'}
           </Text>
-          {error && <Text style={styles.error}>{error}</Text>}
+          {error && error.type !== 'no-speech' && (
+            <Text style={styles.error}>{error.message}</Text>
+          )}
         </View>
         
         {/* Transcript at bottom, doesn't affect button position */}

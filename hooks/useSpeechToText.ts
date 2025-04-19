@@ -1,12 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 
+export interface SpeechError {
+  type: string;
+  message: string;
+}
+
 export function useSpeechToText() {
   const [recognizing, setRecognizing] = useState(false);
   const [isRecordingActive, setIsRecordingActive] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [completeTranscript, setCompleteTranscript] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<SpeechError | null>(null);
   const restartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Auto-restart recognition if it stops while recording is still active
@@ -48,7 +53,11 @@ export function useSpeechToText() {
   });
   
   useSpeechRecognitionEvent('error', (event) => {
-    setError(event.message || 'Speech recognition error');
+    console.error('Speech recognition error:', event);
+    setError({
+      type: event.error,
+      message: event.message || 'Speech recognition error'
+    });
   });
 
   const start = async () => {
@@ -59,7 +68,10 @@ export function useSpeechToText() {
     
     const result = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
     if (!result.granted) {
-      setError('Permission not granted');
+      setError({
+        type: 'PERMISSION_DENIED',
+        message: 'Permission not granted'
+      });
       setIsRecordingActive(false);
       return;
     }
