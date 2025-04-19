@@ -19,6 +19,7 @@ interface TemplatesListScreenProps {
   navigation: {
     navigate: (screen: string, params?: any) => void;
     goBack: () => void;
+    addListener: (event: string, callback: () => void) => () => void;
   };
 }
 
@@ -29,6 +30,17 @@ export const TemplatesListScreen: React.FC<TemplatesListScreenProps> = ({ naviga
   useEffect(() => {
     loadTemplates();
   }, []);
+
+  useEffect(() => {
+    // TODO 
+    // Handle updating this when coming back. Just re-rendering screen is antipattern. 
+    // Try to pass route params back or use context/redux for reactivity.
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadTemplates();
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   const loadTemplates = async () => {
     try {

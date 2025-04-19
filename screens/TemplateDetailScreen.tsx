@@ -6,7 +6,9 @@ import {
   TouchableOpacity, 
   StyleSheet, 
   ActivityIndicator,
-  Alert
+  Alert,
+  Platform,
+  ToastAndroid
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -31,6 +33,14 @@ export const TemplateDetailScreen: React.FC<TemplateDetailScreenProps> = ({
     loadTemplate();
   }, [templateId]);
 
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadTemplate();
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
   const loadTemplate = async () => {
     try {
       setLoading(true);
@@ -38,11 +48,19 @@ export const TemplateDetailScreen: React.FC<TemplateDetailScreenProps> = ({
       if (templateData) {
         setTemplate(templateData);
       } else {
-        Alert.alert('Error', 'Template not found');
+        if (Platform.OS === 'android') {
+          ToastAndroid.show('Template not found', ToastAndroid.SHORT);
+        } else {
+          Alert.alert('Error', 'Template not found');
+        }
         navigation.goBack();
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to load template');
+      if (Platform.OS === 'android') {
+        ToastAndroid.show('Failed to load template', ToastAndroid.SHORT);
+      } else {
+        Alert.alert('Error', 'Failed to load template');
+      }
       console.error(error);
       navigation.goBack();
     } finally {

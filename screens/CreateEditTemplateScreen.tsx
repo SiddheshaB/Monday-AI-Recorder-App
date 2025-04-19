@@ -8,7 +8,8 @@ import {
   StyleSheet,
   Alert,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  ToastAndroid
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -100,15 +101,24 @@ export const CreateEditTemplateScreen: React.FC<CreateEditTemplateScreenProps> =
           title: title.trim(),
           sections: cleanedSections
         });
-        Alert.alert('Success', 'Template updated successfully');
+        
+        // Show toast instead of alert
+        if (Platform.OS === 'android') {
+          ToastAndroid.show('Template updated successfully', ToastAndroid.SHORT);
+        }
       } else {
         await addTemplate({
           title: title.trim(),
           sections: cleanedSections
         });
-        Alert.alert('Success', 'Template created successfully');
+        
+        // Show toast instead of alert
+        if (Platform.OS === 'android') {
+          ToastAndroid.show('Template created successfully', ToastAndroid.SHORT);
+        }
       }
       
+      // Navigate back to refresh the list
       navigation.goBack();
     } catch (error) {
       console.error('Error saving template:', error);
