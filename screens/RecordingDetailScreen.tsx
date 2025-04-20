@@ -219,6 +219,17 @@ export const RecordingDetailScreen: React.FC<RecordingDetailScreenProps> = ({
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
+        {/* Audio Player: modern card UI, only show if audioUri is present and device is Android above 13 */}
+        {recording && Platform.OS === 'android' && Platform.Version > 33 && (recording as any).audioUri ? (
+          <View style={styles.audioPlayerCard}>
+            <View style={styles.audioPlayerHeader}>
+              <MaterialCommunityIcons name="waveform" size={22} color={button.primary} style={{ marginRight: 8 }} />
+              <Text style={styles.audioPlayerLabel}>Audio Playback</Text>
+            </View>
+            <AudioPlayer uri={(recording as any).audioUri} />
+          </View>
+        ) : null}
+
         {/* Recording info */}
         <View style={styles.infoContainer}>
           <Text style={styles.dateText}>{recording.date}</Text>
@@ -267,11 +278,6 @@ export const RecordingDetailScreen: React.FC<RecordingDetailScreenProps> = ({
             ))}
           </View>
         )}
-
-        {/* Audio Player: only show if audioUri is present and device is Android above 13 */}
-        {recording && Platform.OS === 'android' && Platform.Version > 33 && (recording as any).audioUri ? (
-          <AudioPlayer uri={(recording as any).audioUri} />
-        ) : null}
 
         {/* Transcript */}
         <View style={styles.transcriptContainer}>
@@ -506,5 +512,30 @@ const styles = StyleSheet.create({
   templateItemSections: {
     fontSize: 14,
     color: text.secondary,
+  },
+  audioPlayerCard: {
+    backgroundColor: background.secondary,
+    borderRadius: 16,
+    padding: 18,
+    marginHorizontal: 16,
+    marginTop: 10,
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.10,
+    shadowRadius: 8,
+    elevation: 4,
+    alignItems: 'stretch',
+  },
+  audioPlayerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  audioPlayerLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: button.primary,
+    letterSpacing: 0.5,
   },
 });
