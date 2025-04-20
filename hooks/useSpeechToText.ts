@@ -62,10 +62,13 @@ export function useSpeechToText() {
   });
   useSpeechRecognitionEvent('error', (event) => {
     console.error('Speech recognition error:', event);
-    setError({
-      type: event.error,
-      message: event.message || 'Speech recognition error',
-    });
+    if (event && event.error && event.error !== 'no-speech') {
+      stop();
+      setError({
+        type: event.error,
+        message: event.message || 'Speech recognition error',
+      });
+    }
   });
 
   const start = async () => {

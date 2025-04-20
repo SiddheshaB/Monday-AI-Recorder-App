@@ -106,7 +106,7 @@ export const MainScreen: React.FC = () => {
           <Text style={styles.recordLabel}>
             {isRecordingActive ? 'Stop Recording' : 'Start Recording'}
           </Text>
-          {error && error.type !== 'no-speech' && (
+          {error && (
             <Text style={styles.error}>{error.message}</Text>
           )}
         </View>
