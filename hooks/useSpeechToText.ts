@@ -9,8 +9,9 @@ export interface SpeechError {
 }
 
 export function useSpeechToText() {
-  // State for managing speech recognition and audio recording
+  // State that indicates the current internal recognition state as returned by the recorder api
   const [recognizing, setRecognizing] = useState(false);
+  // State for managing expected audio recording state i.e start/stop button status in UI
   const [isRecordingActive, setIsRecordingActive] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [completeTranscript, setCompleteTranscript] = useState('');
@@ -19,8 +20,10 @@ export function useSpeechToText() {
   const restartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   // Only enable audio recording for Android versions ABOVE 33
   const isAndroidAbove13 = Platform.OS === 'android' && Platform.Version > 33;
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
+    // Start recognition again when start button is pressed and recognition is not active
     if (isRecordingActive && !recognizing) {
       restartTimeoutRef.current = setTimeout(() => {
         ExpoSpeechRecognitionModule.start({
@@ -62,12 +65,21 @@ export function useSpeechToText() {
   });
   useSpeechRecognitionEvent('error', (event) => {
     console.error('Speech recognition error:', event);
+    // Ignore 'no-speech' errors (handled elsewhere), retry logic only applies to other errors
     if (event && event.error && event.error !== 'no-speech') {
-      stop();
-      setError({
-        type: event.error,
-        message: event.message || 'Speech recognition error',
-      });
+      if (retryCount < 1 && isRecordingActive) {
+        console.log('Retrying speech recognition...');
+        setRetryCount(retryCount + 1);
+        // Retry by restarting recognition
+        start();
+      } else {
+        stop();
+        setError({
+          type: event.error,
+          message: event.message || 'Speech recognition error',
+        });
+        setRetryCount(0);
+      }
     }
   });
 
@@ -77,6 +89,7 @@ export function useSpeechToText() {
     setCompleteTranscript('');
     setAudioUri(null); // Reset audioUri on new start
     setIsRecordingActive(true);
+    setRetryCount(0); // Reset retryCount on successful start
     const result = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
     if (!result.granted) {
       setError({
