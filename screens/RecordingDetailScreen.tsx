@@ -22,6 +22,7 @@ import { processTranscriptWithTemplate } from '../services/llmService';
 import { Recording } from '../types/recording';
 import { Template } from '../types/template';
 import { background, text, button, shadow } from '../theme/colors';
+import { AudioPlayer } from '../components/AudioPlayer';
 
 type RecordingDetailScreenProps = NativeStackScreenProps<RootStackParamList, 'RecordingDetail'>;
 
@@ -266,6 +267,11 @@ export const RecordingDetailScreen: React.FC<RecordingDetailScreenProps> = ({
             ))}
           </View>
         )}
+
+        {/* Audio Player: only show if audioUri is present and device is Android above 13 */}
+        {recording && Platform.OS === 'android' && Platform.Version > 33 && (recording as any).audioUri ? (
+          <AudioPlayer uri={(recording as any).audioUri} />
+        ) : null}
 
         {/* Transcript */}
         <View style={styles.transcriptContainer}>

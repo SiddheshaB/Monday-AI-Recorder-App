@@ -41,20 +41,19 @@ export const saveRecordings = async (recordings: Recording[]): Promise<void> => 
   }
 };
 
-// Add a new recording
-export const addRecording = async (transcript: string, duration?: number): Promise<Recording> => {
-  const newRecording: Recording = {
+// Add a new recording to AsyncStorage, including audioUri if present
+export const addRecording = async (transcript: string, duration?: number, audioUri?: string): Promise<Recording> => {
+  const newRecording: any = {
     id: generateId(),
     title: `Recording ${new Date().toLocaleString()}`,
     transcript,
     date: formatDate(new Date()),
     duration
   };
-  
+  if (audioUri) newRecording.audioUri = audioUri; // Store audioUri if available
   const recordings = await getRecordings();
   recordings.unshift(newRecording); // Add to the beginning of the array
   await saveRecordings(recordings);
-  
   return newRecording;
 };
 
@@ -64,11 +63,10 @@ export const getRecordingById = async (id: string): Promise<Recording | null> =>
   return recordings.find(r => r.id === id) || null;
 };
 
-// Update a recording
-export const updateRecording = async (updatedRecording: Recording): Promise<void> => {
+// Update a recording in AsyncStorage
+export const updateRecording = async (updatedRecording: any): Promise<void> => {
   const recordings = await getRecordings();
   const index = recordings.findIndex(r => r.id === updatedRecording.id);
-  
   if (index !== -1) {
     recordings[index] = updatedRecording;
     await saveRecordings(recordings);

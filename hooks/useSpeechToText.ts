@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
+import { Platform } from 'react-native';
+import * as FileSystem from 'expo-file-system'; 
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 
 export interface SpeechError {
@@ -7,27 +9,33 @@ export interface SpeechError {
 }
 
 export function useSpeechToText() {
+  // State for managing speech recognition and audio recording
   const [recognizing, setRecognizing] = useState(false);
   const [isRecordingActive, setIsRecordingActive] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [completeTranscript, setCompleteTranscript] = useState('');
   const [error, setError] = useState<SpeechError | null>(null);
+  const [audioUri, setAudioUri] = useState<string | null>(null); // Stores audio file URI
   const restartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Only enable audio recording for Android versions ABOVE 33
+  const isAndroidAbove13 = Platform.OS === 'android' && Platform.Version > 33;
 
-  // Auto-restart recognition if it stops while recording is still active
   useEffect(() => {
     if (isRecordingActive && !recognizing) {
-      // Wait a short time before restarting to avoid rapid restart loops
       restartTimeoutRef.current = setTimeout(() => {
-        console.log('Recognition stopped unexpectedly, restarting...');
         ExpoSpeechRecognitionModule.start({
           lang: 'en-US',
           interimResults: false,
           continuous: true,
+          ...(isAndroidAbove13 && {
+            recordingOptions: {
+              persist: true,
+              outputDirectory: FileSystem.documentDirectory ?? undefined,
+            },
+          }),
         });
       }, 500);
     }
-
     return () => {
       if (restartTimeoutRef.current) {
         clearTimeout(restartTimeoutRef.current);
@@ -36,12 +44,7 @@ export function useSpeechToText() {
   }, [isRecordingActive, recognizing]);
 
   useSpeechRecognitionEvent('start', () => setRecognizing(true));
-  
-  useSpeechRecognitionEvent('end', () => {
-    setRecognizing(false);
-    // Don't clear the timeout here, let the effect handle restarting
-  });
-  
+  useSpeechRecognitionEvent('end', () => setRecognizing(false));
   useSpeechRecognitionEvent('result', (event) => {
     const newTranscript = event.results[0]?.transcript.trim() || '';
     setTranscript(newTranscript);
@@ -51,12 +54,17 @@ export function useSpeechToText() {
       );
     }
   });
-  
+  useSpeechRecognitionEvent('audioend', (event) => {
+    if (isAndroidAbove13 && event?.uri) {
+      console.log('AudioUri:', event.uri);
+      setAudioUri(event.uri);
+    }
+  });
   useSpeechRecognitionEvent('error', (event) => {
     console.error('Speech recognition error:', event);
     setError({
       type: event.error,
-      message: event.message || 'Speech recognition error'
+      message: event.message || 'Speech recognition error',
     });
   });
 
@@ -64,22 +72,27 @@ export function useSpeechToText() {
     setError(null);
     setTranscript('');
     setCompleteTranscript('');
+    setAudioUri(null); // Reset audioUri on new start
     setIsRecordingActive(true);
-    
     const result = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
     if (!result.granted) {
       setError({
         type: 'PERMISSION_DENIED',
-        message: 'Permission not granted'
+        message: 'Permission not granted',
       });
       setIsRecordingActive(false);
       return;
     }
-    
     ExpoSpeechRecognitionModule.start({
       lang: 'en-US',
       interimResults: false,
       continuous: true,
+      ...(isAndroidAbove13 && {
+        recordingOptions: {
+          persist: true,
+          outputDirectory: FileSystem.documentDirectory ?? undefined,
+        },
+      }),
     });
   };
 
@@ -98,6 +111,7 @@ export function useSpeechToText() {
     transcript,
     completeTranscript,
     error,
+    audioUri, // Expose audioUri for MainScreen
     start,
     stop,
   };

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, SafeAreaView, StyleSheet, Alert, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -17,11 +17,16 @@ export const MainScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const [recordingStartTime, setRecordingStartTime] = useState<Date | null>(null);
   const recordingDurationRef = useRef<number>(0);
-  
+  // Flag to indicate we need to save a recording as soon as audioUri is available
+  const [pendingSave, setPendingSave] = useState(false);
+  // Store the duration for the pending recording
+  const [pendingDuration, setPendingDuration] = useState<number | null>(null);
+
   const {
     isRecordingActive,
     error,
     completeTranscript,
+    audioUri,
     start,
     stop,
   } = useSpeechToText();
@@ -35,24 +40,39 @@ export const MainScreen: React.FC = () => {
   };
 
   const handleStopRecording = async () => {
-    // Calculate recording duration in seconds
-    const duration = recordingStartTime 
+    const duration = recordingStartTime
       ? Math.floor((new Date().getTime() - recordingStartTime.getTime()) / 1000)
       : 0;
-    
     recordingDurationRef.current = duration;
     await stop();
-    
-    // Save the recording if there's a transcript
+
     if (completeTranscript.trim()) {
+      setPendingDuration(duration); // Save duration for later
+      setPendingSave(true); // Trigger save when audioUri is ready
+    }
+    setRecordingStartTime(null);
+  };
+
+  useEffect(() => {
+    if (!pendingSave) return;
+
+    // For Android 13+, wait for audioUri; for others, save immediately
+    if (Platform.OS === 'android' && Platform.Version >= 33 && !audioUri) {
+      console.log('Waiting for audioUri to be set...');
+      return; // Wait for audioUri to update
+    }
+
+    const saveRecording = async () => {
       try {
-        const recording = await addRecording(completeTranscript, duration);
-        
-        // Show toast notification instead of alert
+        // Save the recording with transcript, duration, and audioUri (if available)
+        const recording = await addRecording(
+          completeTranscript,
+          pendingDuration ?? undefined,
+          audioUri ?? undefined
+        );
         if (Platform.OS === 'android') {
           ToastAndroid.show('Recording saved successfully', ToastAndroid.SHORT);
         } else {
-          // For iOS, use a temporary alert that auto-dismisses
           const recordingId = recording.id;
           setTimeout(() => {
             navigation.navigate('RecordingDetail', { recordingId });
@@ -61,12 +81,16 @@ export const MainScreen: React.FC = () => {
       } catch (error) {
         console.error('Error saving recording:', error);
         Alert.alert('Error', 'Failed to save recording');
+      } finally {
+        setPendingSave(false); // Reset pending flag
+        setPendingDuration(null); // Reset duration
       }
-    }
-    
-    // Reset recording start time
-    setRecordingStartTime(null);
-  };
+    };
+
+    console.log('Saving recording...');
+    saveRecording();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingSave, audioUri]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
