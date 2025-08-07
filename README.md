@@ -31,4 +31,4 @@ Groq SDK (for structured AI summaries)
 
 JavaScript / TypeScript
 
-[Watch Demo](https://github.com/SiddheshaB/Monday-AI-Recorder-App/blob/main/videos/Monday AI Recorder Demo.mp4?raw=true)
+[Watch Demo](https://github.com/SiddheshaB/Monday-AI-Recorder-App/blob/main/videos/MondayAIRecorderDemo.mp4?raw=true)
