@@ -15,6 +15,7 @@ A proof-of-concept mobile app built using React Native and Expo, designed to str
 ⚙️ Customizable Output: Designed to adapt to different professional use cases with flexible summary formats.
 
 
+<img src="https://github.com/SiddheshaB/Monday-AI-Recorder-App/blob/main/images/Screenshot 2025-07-05 125935.png?raw=true" width="321" height="669" alt="Screenshot" />
 
 
 <img width="321" height="669" alt="Screenshot 2025-07-05 125956" src="https://github.com/user-attachments/assets/e693d090-17cd-4adf-9f97-b48685aa0d21" /> <img width="321" height="669" alt="Screenshot 2025-07-05 125925" src="https://github.com/user-attachments/assets/ef0b9773-4f82-44c3-8335-1ecb4591e2d2" />
